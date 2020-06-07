@@ -3,4 +3,4 @@ An encryption app written in Java.
 # Usage
 Simply run the application. No CLI is provided, only GUI.
 # How to build
-This app uses IntelliJ Swing Builder. Open the project with IntelliJ IDEA and run it.
+Open the project folder and do __mvn clean compile assembly:single__. This will generate jar in <project_folder>/target/.
