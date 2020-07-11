@@ -1,8 +1,9 @@
 package com.gontones.demovo;
 
+import org.springframework.security.crypto.codec.Hex;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.security.crypto.encrypt.Encryptors;
-import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.MessageDigest;
 import org.apache.commons.codec.binary.Base64;
@@ -16,29 +17,17 @@ public class CipherUtils
 
     public static String base64decode(final String input) {
         try {
-            return new String(Base64.decodeBase64(input));
+            return new String(Base64.decodeBase64(input.getBytes()));
         }
         catch (Exception e) {
-            return new String(Base64.decodeBase64(input.replace("'", "")));
+            return new String(Base64.decodeBase64(input.replace("'", "").getBytes()));
         }
     }
 
-    public static String shahash(final String st) {
-        MessageDigest messageDigest = null;
-        byte[] digest = new byte[0];
-        try {
-            messageDigest = MessageDigest.getInstance("SHA-256");
-            messageDigest.reset();
-            messageDigest.update(st.getBytes());
-            digest = messageDigest.digest();
-        }
-        catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        final BigInteger bigInt = new BigInteger(1, digest);
-        String shaHex;
-        for (shaHex = bigInt.toString(16); shaHex.length() < 32; shaHex = "0" + shaHex) {}
-        return shaHex;
+    public static String shahash(final String st) throws NoSuchAlgorithmException {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(st.getBytes(StandardCharsets.UTF_8));
+        return new String(Hex.encode(hash));
     }
 
     public static String caesarDecode(final String input, final String key) {
@@ -68,12 +57,12 @@ public class CipherUtils
         return gotv;
     }
 
-    public static String aescipher(final String key, final String gotv, final String salt) {
+    public static String aescipher(final String key, final String gotv, final String salt) throws NoSuchAlgorithmException {
         final TextEncryptor encryptor = Encryptors.text(key, shahash(salt));
         return encryptor.encrypt(gotv);
     }
 
-    public static String aesdecipher(final String key, final String decodeone, final String salt) {
+    public static String aesdecipher(final String key, final String decodeone, final String salt) throws NoSuchAlgorithmException {
         final TextEncryptor encryptor = Encryptors.text(key, shahash(salt));
         return encryptor.decrypt(decodeone);
     }
